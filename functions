@@ -132,6 +132,8 @@ stack-validate
 stacks
 sts-assume-role
 subnets
+thing-into-thing-group
+things
 vpc-az-count
 vpc-azs
 vpc-default-delete

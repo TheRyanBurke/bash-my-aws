@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# iot-functions
+#
+# List AWS IoT Core things
+
+things() {
+
+  # List IoT Core things
+  #
+  #     $ things
+  #     thingName  thingType
+  #     thingName1  thingType1
+  #
+  # *Optionally provide a filter string for a `| grep` effect with tighter columisation:*
+  #
+  #     $ things LED
+  #     GreenLED   None
+  #     lighbulb1  TypeLED
+
+  local filters=$(__bma_read_filters $@)
+  
+  aws iot list-things                                            \
+    --query "
+      things[].[
+        thingName,
+        thingTypeName
+      ]"                                                               \
+    --output text       |
+  grep -E -- "$filters" |
+  LC_ALL=C sort -b -k 6 |
+  column -s$'\t' -t
+}
+
+thing-into-thing-group() {
+
+  # Add thing(s) into the specified thing group
+  #
+  #     USAGE: thing-into-thing-group thing-group-name [thing-group-name] thing-name [thing-name]
+
+  local usg_msg="thing-group-name [thing-group-name] thing-name [thing-name]"
+  local thing_group=$2
+  echo "group is $thing_group"
+  shift 2
+  local things="$(__bma_read_inputs $@)"
+  echo "things are $things"
+  
+  [[ -z $things ]] && __bma_usage "$usg_msg" && return 1
+  [[ -z $thing_group ]] && __bma_usage "$usg_msg" && return 1
+
+  local thing
+  for thing in $things; do
+    aws iot add-thing-to-thing-group \
+      --thing-name "$thing"         \
+      --thing-group-name "$thing_group"
+  done
+}

@@ -1,0 +1,7 @@
+_bma_things_completion() {
+  local command="$1"
+  local word="$2"
+  local options=$(bma things | awk '{ print $1 }')
+  COMPREPLY=( $(compgen -W "${options}" -- ${word}) )
+  return 0
+}
